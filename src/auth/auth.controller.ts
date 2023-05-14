@@ -8,6 +8,30 @@ interface loginTypes {
   password: string;
 }
 
+interface changeData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  birthday: string;
+}
+
+interface changeDelivery {
+  id: string;
+  region: string;
+  city: string;
+  street: string;
+  house: string;
+  index: string;
+}
+
+interface changePassword {
+  id: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
 @Controller({
   path: 'auth',
   version: '1',
@@ -16,7 +40,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async createUser(@Body() user: User): Promise<User> {
+  async createUser(@Body() user: User): Promise<User | Object> {
     return await this.authService.create(user);
   }
 
@@ -27,11 +51,26 @@ export class AuthController {
   }
 
   @Post('verify')
-  async verify(@Res() res: Response, @Body() body: { token: string }) {
+  async verify(@Body() body: { token: string }) {
     const result = await this.authService.verify(body.token);
-    if (result.status === 'Token incorrect') {
-      return res.status(403).send(result);
+    if (result.status === 'token incorrect') {
+      return result;
     }
-    return res.status(200).send(result);
+    return result;
+  }
+
+  @Post('change/data')
+  async changeData(@Body() body: changeData) {
+    return await this.authService.changeData(body);
+  }
+
+  @Post('change/delivery')
+  async changeDelivery(@Body() body: changeDelivery) {
+    return await this.authService.changeDelivery(body);
+  }
+
+  @Post('change/password')
+  async changePassword(@Body() body: changePassword) {
+    return await this.authService.changePassword(body);
   }
 }
