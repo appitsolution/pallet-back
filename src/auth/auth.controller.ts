@@ -15,6 +15,7 @@ interface changeData {
   phone: string;
   email: string;
   birthday: string;
+  orderHistory: string[];
 }
 
 interface changeDelivery {
@@ -30,6 +31,19 @@ interface changePassword {
   id: string;
   currentPassword: string;
   newPassword: string;
+}
+
+interface orderData {
+  id: string; //Ид заказа
+  idUser: string; //Ид пользователя
+  statusOrder: string; // Статус заказа
+  city: string; //Город заказа
+  delivery: string; //Способ доставки
+  address: string; // Адресс склада
+  paymentSelect: string; //Способ оплаты
+  dateSend: string; //Дата отправки
+  dateCreate: string; //Дата создания заказа
+  products: []; //Список товаров
 }
 
 @Controller({
@@ -72,5 +86,10 @@ export class AuthController {
   @Post('change/password')
   async changePassword(@Body() body: changePassword) {
     return await this.authService.changePassword(body);
+  }
+
+  @Post('create/order')
+  async createOrder(@Body() body: orderData) {
+    return await this.authService.createOrder(body);
   }
 }

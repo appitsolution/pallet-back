@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../database/user/user.schema';
+import axios from 'axios';
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -17,6 +18,7 @@ interface changeData {
   phone: string;
   email: string;
   birthday: string;
+  orderHistory: string[];
 }
 
 interface changeDelivery {
@@ -32,6 +34,19 @@ interface changePassword {
   id: string;
   currentPassword: string;
   newPassword: string;
+}
+
+interface orderData {
+  id: string; //Ид заказа
+  idUser: string; //Ид пользователя
+  statusOrder: string; // Статус заказа
+  city: string; //Город заказа
+  delivery: string; //Способ доставки
+  address: string; // Адресс склада
+  paymentSelect: string; //Способ оплаты
+  dateSend: string; //Дата отправки
+  dateCreate: string; //Дата создания заказа
+  products: []; //Список товаров
 }
 
 @Injectable()
@@ -52,6 +67,7 @@ export class AuthService {
       ...user,
       password: bcrypt.hashSync(user.password),
       birthday: '',
+      orderHistory: [],
       delivery: {
         region: '',
         city: '',
@@ -209,5 +225,32 @@ export class AuthService {
       code: 401,
       status: 'Incorrect password',
     };
+  }
+
+  async createOrder(data: orderData) {
+    const statusCurrent =
+      data.statusOrder === 'В процесі оброблення' ? 'loading' : 'rejected';
+
+    try {
+      const getUser = await this.userModel.findById(data.idUser);
+      await axios.post(`${process.env.ADMIN_API}/api/orders`, {
+        ...data,
+        statusOrder: statusCurrent,
+      });
+      await this.userModel.findByIdAndUpdate(data.idUser, {
+        orderHistory: [...getUser.orderHistory, data.id],
+      });
+      return {
+        code: 201,
+        status: 'ok',
+      };
+    } catch (err) {
+      console.log(err);
+
+      return {
+        code: 400,
+        status: 'rejected',
+      };
+    }
   }
 }
