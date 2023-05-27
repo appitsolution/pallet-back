@@ -53,6 +53,11 @@ interface orderData {
   products: []; //Список товаров
 }
 
+interface acceptPhoneData {
+  phone: string;
+  code: string;
+}
+
 @Controller({
   path: 'auth',
   version: '1',
@@ -63,6 +68,11 @@ export class AuthController {
   @Post('register')
   async createUser(@Body() user: User): Promise<User | Object> {
     return await this.authService.create(user);
+  }
+
+  @Post('accept-phone')
+  async acceptPhone(@Body() data: acceptPhoneData): Promise<Object> {
+    return this.acceptPhone(data);
   }
 
   @Post('login')

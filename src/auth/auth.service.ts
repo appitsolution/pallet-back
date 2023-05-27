@@ -53,6 +53,11 @@ interface orderData {
   products: []; //Список товаров
 }
 
+interface acceptPhoneData {
+  phone: string;
+  code: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -106,6 +111,29 @@ export class AuthService {
     };
   }
 
+  async acceptPhone(data: acceptPhoneData): Promise<Object> {
+    const getPhone = await this.checkPhoneModel.findOne({ phone: data.phone });
+
+    if (!getPhone) {
+      return {
+        code: 404,
+        status: 'Not Found',
+      };
+    }
+
+    if (getPhone.code === data.code) {
+      return {
+        code: 200,
+        status: 'active',
+      };
+    } else {
+      return {
+        code: 400,
+        status: 'code incorrect',
+      };
+    }
+  }
+
   async login(user: loginTypes) {
     const checkEmail = await this.userModel.findOne({
       email: user.login,
@@ -117,6 +145,13 @@ export class AuthService {
 
     if (checkEmail) {
       if (bcrypt.compareSync(user.password, checkEmail.password)) {
+        if (!checkEmail.activeAccoung) {
+          return {
+            code: 401,
+            status: 'not active',
+            phone: checkEmail.phone,
+          };
+        }
         const payload = {
           id: checkEmail._id,
         };
@@ -136,6 +171,14 @@ export class AuthService {
     }
     if (checkPhone) {
       if (bcrypt.compareSync(user.password, checkPhone.password)) {
+        if (!checkPhone.activeAccoung) {
+          return {
+            code: 401,
+            status: 'not active',
+            phone: checkPhone.phone,
+          };
+        }
+
         const payload = {
           id: checkPhone._id,
         };
