@@ -72,8 +72,9 @@ export class AuthController {
 
   @Post('accept-phone')
   async acceptPhone(@Body() data: acceptPhoneData): Promise<Object> {
-    console.log(data);
-    return await this.acceptPhone(data);
+    const result = await this.authService.acceptPhone(data);
+
+    return result;
   }
 
   @Post('login')

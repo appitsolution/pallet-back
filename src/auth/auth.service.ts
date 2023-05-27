@@ -113,7 +113,6 @@ export class AuthService {
 
   async acceptPhone(data: acceptPhoneData): Promise<Object> {
     const getPhone = await this.checkPhoneModel.findOne({ phone: data.phone });
-
     if (!getPhone) {
       return {
         code: 404,
@@ -122,6 +121,8 @@ export class AuthService {
     }
 
     if (getPhone.code === data.code) {
+      const user = await this.userModel.findOne({ phone: data.phone });
+      await this.userModel.findByIdAndUpdate(user._id, { activeAccount: true });
       return {
         code: 200,
         status: 'active',
