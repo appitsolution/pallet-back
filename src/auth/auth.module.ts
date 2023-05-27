@@ -6,7 +6,7 @@ import { User, UserSchema } from '../database/user/user.schema';
 import {
   CheckPhone,
   CheckPhoneSchema,
-} from 'src/database/user/check-phone.schema';
+} from '../database/user/check-phone.schema';
 
 @Module({
   imports: [
