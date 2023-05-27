@@ -37,6 +37,8 @@ export class User {
   delivery: Delivery;
   @Prop()
   orderHistory: string[];
+  @Prop()
+  activeAccoung: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

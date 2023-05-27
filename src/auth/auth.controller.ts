@@ -1,7 +1,14 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from 'src/database/user/user.schema';
-import { Response } from 'express';
+import { Express } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 interface loginTypes {
   login: string;
@@ -91,5 +98,13 @@ export class AuthController {
   @Post('create/order')
   async createOrder(@Body() body: orderData) {
     return await this.authService.createOrder(body);
+  }
+  @Post('photo')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    // Обработка загруженного файла
+    console.log(file);
+
+    // Вернуть ответ или выполнить необходимую обработку
   }
 }

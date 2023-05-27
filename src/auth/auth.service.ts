@@ -3,6 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../database/user/user.schema';
 import axios from 'axios';
+import {
+  CheckPhone,
+  CheckPhoneDocument,
+} from 'src/database/user/check-phone.schema';
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -51,9 +55,20 @@ interface orderData {
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(CheckPhone.name)
+    private checkPhoneModel: Model<CheckPhoneDocument>,
+  ) {}
 
   async create(user: User): Promise<Object | User> {
+    function generateRandomDigits() {
+      var randomDigits = Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0');
+      return randomDigits;
+    }
+
     const checkUser = await this.userModel.findOne({ email: user.email });
     console.log(checkUser);
 
@@ -75,8 +90,14 @@ export class AuthService {
         house: '',
         index: '',
       },
+      activeAccoung: false,
     });
     const result = await createdUser.save();
+
+    await this.checkPhoneModel.create({
+      phone: user.phone,
+      code: generateRandomDigits(),
+    });
 
     return {
       code: 201,
