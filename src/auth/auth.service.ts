@@ -95,7 +95,7 @@ export class AuthService {
         house: '',
         index: '',
       },
-      activeAccoung: false,
+      activeAccount: false,
     });
     const result = await createdUser.save();
 
@@ -145,7 +145,7 @@ export class AuthService {
 
     if (checkEmail) {
       if (bcrypt.compareSync(user.password, checkEmail.password)) {
-        if (!checkEmail.activeAccoung) {
+        if (!checkEmail.activeAccount) {
           return {
             code: 401,
             status: 'not active',
@@ -171,7 +171,7 @@ export class AuthService {
     }
     if (checkPhone) {
       if (bcrypt.compareSync(user.password, checkPhone.password)) {
-        if (!checkPhone.activeAccoung) {
+        if (!checkPhone.activeAccount) {
           return {
             code: 401,
             status: 'not active',

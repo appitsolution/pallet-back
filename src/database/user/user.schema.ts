@@ -38,7 +38,7 @@ export class User {
   @Prop()
   orderHistory: string[];
   @Prop()
-  activeAccoung: boolean;
+  activeAccount: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
