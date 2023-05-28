@@ -135,6 +135,24 @@ export class AuthService {
     }
   }
 
+  async sendCode(data: { phone: string }): Promise<Object> {
+    const currentCode = await this.checkPhoneModel.findOne({
+      phone: data.phone,
+    });
+
+    if (!currentCode) {
+      return {
+        code: 404,
+        status: 'not found',
+      };
+    }
+
+    return {
+      code: 200,
+      status: 'ok',
+    };
+  }
+
   async login(user: loginTypes) {
     const checkEmail = await this.userModel.findOne({
       email: user.login,

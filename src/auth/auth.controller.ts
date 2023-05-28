@@ -77,6 +77,11 @@ export class AuthController {
     return result;
   }
 
+  @Post('send-code')
+  async sendCode(@Body() data: { phone: string }): Promise<Object> {
+    return await this.authService.sendCode(data);
+  }
+
   @Post('login')
   async loginUser(@Body() user: loginTypes) {
     const result = await this.authService.login(user);
