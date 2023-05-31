@@ -40,6 +40,25 @@ function authenticate(authUrl: string, username: string, password: string) {
     });
 }
 
+function getCurrentDate() {
+  let currentDate = new Date();
+
+  let day = String(currentDate.getDate());
+  let month = String(currentDate.getMonth() + 1);
+  let year = String(currentDate.getFullYear());
+
+  if (Number(day) < 10) {
+    day = '0' + day;
+  }
+  if (Number(month) < 10) {
+    month = '0' + month;
+  }
+
+  let formattedDate = year + '.' + month + '.' + day;
+
+  return formattedDate;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -386,9 +405,74 @@ export class AuthService {
         bonusNotActive: [
           ...user.bonus.bonusNotActive.filter((item) => item.id !== data.id),
         ],
+        startBonusDate:
+          user.bonus.bonusScore === '0'
+            ? getCurrentDate()
+            : user.bonus.startBonusDate,
       },
     });
 
     return result;
+  }
+
+  async checkBonusActive() {
+    const result = await this.userModel.find();
+
+    Promise.all([
+      result.forEach(async (user) => {
+        const currentDate = new Date();
+        const dateString = user.bonus.startBonusDate;
+        if (dateString === '') return;
+        const targetDate = new Date(dateString as string);
+
+        const timeDifference: number =
+          currentDate.getTime() - targetDate.getTime();
+
+        const millisecondsInDay: number = 1000 * 60 * 60 * 24;
+        const daysDifference: number = Math.ceil(
+          timeDifference / millisecondsInDay,
+        );
+
+        const yearDifference =
+          currentDate.getFullYear() - targetDate.getFullYear();
+        const monthDifference: number =
+          currentDate.getMonth() - targetDate.getMonth();
+        const dayDifference: number =
+          currentDate.getDate() - targetDate.getDate();
+
+        const testDate =
+          yearDifference > 1 ||
+          (yearDifference === 1 &&
+            (monthDifference > 0 ||
+              (monthDifference === 0 && dayDifference >= 0))) ||
+          (yearDifference === 0 &&
+            monthDifference === 0 &&
+            daysDifference >= 30);
+
+        if (testDate) {
+          currentDate.setMonth(currentDate.getMonth() + 12);
+
+          const newDate: string = currentDate.toISOString().split('T')[0];
+
+          await this.userModel.findByIdAndUpdate(user._id, {
+            bonus: {
+              bonusScore: '0',
+              bonusHistory: [],
+              bonusNotActive: [],
+              startBonusDate: newDate.replace(/\-/g, '.'),
+            },
+          });
+          return;
+        } else {
+          currentDate.setMonth(currentDate.getMonth() + 12);
+
+          const newDate: string = currentDate.toISOString().split('T')[0];
+
+          console.log(newDate);
+          return user.bonus.startBonusDate;
+        }
+      }),
+    ]);
+    return 'ok';
   }
 }

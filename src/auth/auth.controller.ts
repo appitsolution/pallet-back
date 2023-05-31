@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -126,5 +127,10 @@ export class AuthController {
   @Post('bonus/activated')
   async bonusActivated(@Body() body: { id: string; idUser: string }) {
     return await this.authService.bonusActivated(body);
+  }
+
+  @Get('bonus/remove')
+  async bonusRemove() {
+    return await this.authService.checkBonusActive();
   }
 }

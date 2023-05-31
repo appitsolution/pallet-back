@@ -35,6 +35,7 @@ type Bonus = {
   bonusScore: string;
   bonusHistory: BonusHistory[];
   bonusNotActive: BonusNotActive[];
+  startBonusDate: string;
 };
 
 export type UserDocument = User & Document;
@@ -68,13 +69,24 @@ export class User {
   @Prop()
   activeAccount: boolean;
   @Prop({
-    type: { bonusScore: String, bonusHistory: [], bonusNotActive: [] },
-    default: { bonusScore: '0', bonusHistory: [], bonusNotActive: [] },
+    type: {
+      bonusScore: String,
+      bonusHistory: [],
+      bonusNotActive: [],
+      startBonusDate: String,
+    },
+    default: {
+      bonusScore: '0',
+      bonusHistory: [],
+      bonusNotActive: [],
+      startBonusDate: '',
+    },
   })
   bonus: {
     bonusScore: String;
     bonusHistory: BonusHistory[];
     bonusNotActive: BonusNotActive[];
+    startBonusDate: String;
   };
 }
 
