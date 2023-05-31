@@ -450,16 +450,12 @@ export class AuthService {
             daysDifference >= 30);
 
         if (testDate) {
-          currentDate.setMonth(currentDate.getMonth() + 12);
-
-          const newDate: string = currentDate.toISOString().split('T')[0];
-
           await this.userModel.findByIdAndUpdate(user._id, {
             bonus: {
               bonusScore: '0',
               bonusHistory: [],
               bonusNotActive: [],
-              startBonusDate: newDate.replace(/\-/g, '.'),
+              startBonusDate: '',
             },
           });
           return;
