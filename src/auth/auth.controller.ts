@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { User } from 'src/database/user/user.schema';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { BonusHistory, BonusNotActive } from './auth.types';
 
 interface loginTypes {
   login: string;
@@ -116,12 +117,14 @@ export class AuthController {
   async createOrder(@Body() body: orderData) {
     return await this.authService.createOrder(body);
   }
-  @Post('photo')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    // Обработка загруженного файла
-    console.log(file);
 
-    // Вернуть ответ или выполнить необходимую обработку
+  @Post('bonus/order')
+  async bonusOrder(@Body() body: BonusNotActive) {
+    return await this.authService.bonusOrder(body);
+  }
+
+  @Post('bonus/activated')
+  async bonusActivated(@Body() body: { id: string; idUser: string }) {
+    return await this.authService.bonusActivated(body);
   }
 }

@@ -9,6 +9,34 @@ type Delivery = {
   index: string;
 };
 
+type BonusHistory = {
+  id: String;
+  idUser: String;
+  title: 'Реферальна програма' | 'Поставка' | 'Замовлення' | string; // Назва
+  date: String; // Дата
+  order: String; // Сума замовленя
+  bonus: String; // Бонуси "+/-300"
+  bonusType: 'minus' | 'plus'; // Тип бонус
+  type: 'default' | 'referral' | 'delivery' | 'order';
+};
+
+type BonusNotActive = {
+  id: String;
+  idUser: String;
+  title: 'Реферальна програма' | 'Поставка' | 'Замовлення' | string; // Назва
+  date: String; // Дата
+  order: String; // Сума замовленя
+  bonus: String; // Бонуси "+/-300"
+  bonusType: 'minus' | 'plus'; // Тип бонус
+  type: 'default' | 'referral' | 'delivery' | 'order';
+};
+
+type Bonus = {
+  bonusScore: string;
+  bonusHistory: BonusHistory[];
+  bonusNotActive: BonusNotActive[];
+};
+
 export type UserDocument = User & Document;
 @Schema()
 export class User {
@@ -39,6 +67,15 @@ export class User {
   orderHistory: string[];
   @Prop()
   activeAccount: boolean;
+  @Prop({
+    type: { bonusScore: String, bonusHistory: [], bonusNotActive: [] },
+    default: { bonusScore: '0', bonusHistory: [], bonusNotActive: [] },
+  })
+  bonus: {
+    bonusScore: String;
+    bonusHistory: BonusHistory[];
+    bonusNotActive: BonusNotActive[];
+  };
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

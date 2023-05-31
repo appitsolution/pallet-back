@@ -7,55 +7,37 @@ import {
   CheckPhone,
   CheckPhoneDocument,
 } from 'src/database/user/check-phone.schema';
+import {
+  loginTypes,
+  changeData,
+  changeDelivery,
+  changePassword,
+  orderData,
+  acceptPhoneData,
+  BonusHistory,
+  BonusNotActive,
+} from './auth.types';
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const btoa = require('btoa');
 
-interface loginTypes {
-  login: string;
-  password: string;
-}
+// SET HERE YOUR url, clientId, and secret
 
-interface changeData {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  birthday: string;
-  orderHistory: string[];
-}
+function authenticate(authUrl: string, username: string, password: string) {
+  const encoded = btoa(username + ':' + password);
+  const headers = {
+    Authorization: 'Basic ' + encoded,
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  const payload = 'grant_type=client_credentials';
 
-interface changeDelivery {
-  id: string;
-  region: string;
-  city: string;
-  street: string;
-  house: string;
-  index: string;
-}
-
-interface changePassword {
-  id: string;
-  currentPassword: string;
-  newPassword: string;
-}
-
-interface orderData {
-  id: string; //Ид заказа
-  idUser: string; //Ид пользователя
-  statusOrder: string; // Статус заказа
-  city: string; //Город заказа
-  delivery: string; //Способ доставки
-  address: string; // Адресс склада
-  paymentSelect: string; //Способ оплаты
-  dateSend: string; //Дата отправки
-  dateCreate: string; //Дата создания заказа
-  products: []; //Список товаров
-}
-
-interface acceptPhoneData {
-  phone: string;
-  code: string;
+  return axios
+    .post(authUrl, payload, { headers })
+    .then((response) => response.data.access_token)
+    .catch((error) => {
+      console.error('Authentication error:', error);
+      throw error;
+    });
 }
 
 @Injectable()
@@ -139,6 +121,31 @@ export class AuthService {
     const currentCode = await this.checkPhoneModel.findOne({
       phone: data.phone,
     });
+
+    const authServerTokenUrl =
+      'https://api-gateway.kyivstar.ua/idp/oauth2/token';
+    const clientId = process.env.CLIENT_ID;
+    const clientSecret = process.env.CLIENT_SECRET;
+
+    const token = await authenticate(
+      authServerTokenUrl,
+      clientId,
+      clientSecret,
+    );
+
+    const result = await axios.post(
+      `https://api-gateway.kyivstar.ua/sandbox/rest/v1beta/sms`,
+      {
+        from: 'messagedesk',
+        to: data.phone,
+        text: `Your code ${currentCode.code}`,
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     if (!currentCode) {
       return {
@@ -323,6 +330,7 @@ export class AuthService {
       await this.userModel.findByIdAndUpdate(data.idUser, {
         orderHistory: [...getUser.orderHistory, data.id],
       });
+
       return {
         code: 201,
         status: 'ok',
@@ -335,5 +343,52 @@ export class AuthService {
         status: 'rejected',
       };
     }
+  }
+
+  async bonusOrder(data: BonusNotActive) {
+    const user = await this.userModel.findById(data.idUser);
+
+    const checkBonus = user.bonus.bonusNotActive.find(
+      (item) => item.id === data.id,
+    );
+
+    if (checkBonus !== undefined)
+      return {
+        code: 403,
+        status: 'error',
+      };
+
+    const result = await this.userModel.findByIdAndUpdate(user._id, {
+      bonus: {
+        bonusScore: user.bonus.bonusScore,
+        bonusHistory: user.bonus.bonusHistory,
+        bonusNotActive: [...user.bonus.bonusNotActive, data],
+      },
+    });
+
+    return {
+      code: 201,
+      status: 'ok',
+    };
+  }
+
+  async bonusActivated(data: { id: string; idUser: string }) {
+    const user = await this.userModel.findById(data.idUser);
+    const bonusItem = user.bonus.bonusNotActive.find(
+      (item) => item.id === data.id,
+    );
+    const result = this.userModel.findByIdAndUpdate(data.idUser, {
+      bonus: {
+        bonusScore: String(
+          Number(user.bonus.bonusScore) + Number(bonusItem.order) * 5,
+        ),
+        bonusHistory: [...user.bonus.bonusHistory, bonusItem],
+        bonusNotActive: [
+          ...user.bonus.bonusNotActive.filter((item) => item.id !== data.id),
+        ],
+      },
+    });
+
+    return result;
   }
 }
