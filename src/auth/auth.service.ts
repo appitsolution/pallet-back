@@ -399,7 +399,7 @@ export class AuthService {
     const result = this.userModel.findByIdAndUpdate(data.idUser, {
       bonus: {
         bonusScore: String(
-          Number(user.bonus.bonusScore) + Number(bonusItem.order) * 5,
+          Number(user.bonus.bonusScore) + Number(bonusItem.order) * 1,
         ),
         bonusHistory: [...user.bonus.bonusHistory, bonusItem],
         bonusNotActive: [
