@@ -48,7 +48,8 @@ interface orderData {
   statusOrder: string; // Статус заказа
   city: string; //Город заказа
   delivery: string; //Способ доставки
-  address: string; // Адресс склада
+  address?: string; // Адресс склада
+  storehouse?: string;
   paymentSelect: string; //Способ оплаты
   dateSend: string; //Дата отправки
   dateCreate: string; //Дата создания заказа
