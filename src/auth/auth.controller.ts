@@ -5,6 +5,7 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  Response,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from 'src/database/user/user.schema';
@@ -54,6 +55,7 @@ interface orderData {
   dateSend: string; //Дата отправки
   dateCreate: string; //Дата создания заказа
   products: []; //Список товаров
+  againData: any;
 }
 
 interface acceptPhoneData {
