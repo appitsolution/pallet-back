@@ -117,6 +117,11 @@ export class AuthController {
     return await this.authService.changePassword(body);
   }
 
+  @Post('reset/password')
+  async resetPassword(@Body() body: { phone: string }) {
+    return await this.authService.resetPassword(body);
+  }
+
   @Post('create/order')
   async createOrder(@Body() body: orderData) {
     return await this.authService.createOrder(body);

@@ -8,6 +8,10 @@ import {
   CheckPhoneDocument,
 } from 'src/database/user/check-phone.schema';
 import {
+  ResetPasswordDocument,
+  ResetPassword,
+} from 'src/database/user/reset-password.schema';
+import {
   loginTypes,
   changeData,
   changeDelivery,
@@ -59,12 +63,27 @@ function getCurrentDate() {
   return formattedDate;
 }
 
+function generateTempPassword(length = 8) {
+  const characters =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let tempPassword = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    tempPassword += characters[randomIndex];
+  }
+
+  return tempPassword;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(CheckPhone.name)
     private checkPhoneModel: Model<CheckPhoneDocument>,
+    @InjectModel(ResetPassword.name)
+    private resetPasswordModel: Model<ResetPasswordDocument>,
   ) {}
 
   async create(user: User): Promise<Object | User> {
@@ -171,6 +190,47 @@ export class AuthService {
         code: 404,
         status: 'not found',
       };
+    }
+
+    return {
+      code: 200,
+      status: 'ok',
+    };
+  }
+
+  async resetPassword(data: { phone: string }): Promise<Object> {
+    const currentUser = await this.userModel.findOne({ phone: data.phone });
+    if (!currentUser) {
+      return {
+        code: 404,
+        status: 'not found',
+      };
+    }
+
+    const newPassword = generateTempPassword();
+
+    await this.userModel.findByIdAndUpdate(
+      { _id: currentUser.id },
+      { password: bcrypt.hashSync(newPassword) },
+    );
+
+    const checkResetPassword = await this.resetPasswordModel.findOne({
+      phone: currentUser.phone,
+    });
+
+    if (!checkResetPassword) {
+      await this.resetPasswordModel.create({
+        phone: currentUser.phone,
+        password: newPassword,
+      });
+    } else {
+      await this.resetPasswordModel.findOneAndUpdate(
+        { phone: currentUser.phone },
+        {
+          phone: currentUser.phone,
+          password: newPassword,
+        },
+      );
     }
 
     return {

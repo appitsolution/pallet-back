@@ -8,6 +8,10 @@ import {
   CheckPhone,
   CheckPhoneSchema,
 } from './database/user/check-phone.schema';
+import {
+  ResetPassword,
+  ResetPasswordSchema,
+} from './database/user/reset-password.schema';
 dotenv.config();
 
 @Module({
@@ -16,6 +20,7 @@ dotenv.config();
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: CheckPhone.name, schema: CheckPhoneSchema },
+      { name: ResetPassword.name, schema: ResetPasswordSchema },
     ]),
   ],
   controllers: [AuthController],
