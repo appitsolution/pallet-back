@@ -405,6 +405,7 @@ export class AuthService {
       await axios.post(`${process.env.ADMIN_API}/api/orders`, {
         ...data,
         statusOrder: statusCurrent,
+        statusPayment: 'not accept',
       });
       await this.userModel.findByIdAndUpdate(data.idUser, {
         orderHistory: [...getUser.orderHistory, data.id],
