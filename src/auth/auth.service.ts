@@ -100,12 +100,14 @@ export class AuthService {
       return {
         code: 409,
         status: 'have such user',
+        error: 'phone',
       };
 
     if (checkUser)
       return {
         code: 409,
         status: 'have such user',
+        error: 'email',
       };
 
     const createdUser = new this.userModel({
