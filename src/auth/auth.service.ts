@@ -95,7 +95,12 @@ export class AuthService {
     }
 
     const checkUser = await this.userModel.findOne({ email: user.email });
-    console.log(checkUser);
+    const checkUserPhone = await this.userModel.findOne({ phone: user.phone });
+    if (checkUserPhone)
+      return {
+        code: 409,
+        status: 'have such user',
+      };
 
     if (checkUser)
       return {
@@ -160,29 +165,8 @@ export class AuthService {
       phone: data.phone,
     });
 
-    const authServerTokenUrl =
-      'https://api-gateway.kyivstar.ua/idp/oauth2/token';
-    const clientId = process.env.CLIENT_ID;
-    const clientSecret = process.env.CLIENT_SECRET;
-
-    const token = await authenticate(
-      authServerTokenUrl,
-      clientId,
-      clientSecret,
-    );
-
-    const result = await axios.post(
-      `https://api-gateway.kyivstar.ua/sandbox/rest/v1beta/sms`,
-      {
-        from: 'messagedesk',
-        to: data.phone,
-        text: `Your code ${currentCode.code}`,
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      },
+    const result = await axios(
+      `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=${data.phone}&message=Your code ${currentCode.code}`,
     );
 
     if (!currentCode) {
@@ -209,6 +193,7 @@ export class AuthService {
 
     const newPassword = generateTempPassword();
 
+    console.log(currentUser);
     await this.userModel.findByIdAndUpdate(
       { _id: currentUser.id },
       { password: bcrypt.hashSync(newPassword) },
@@ -223,6 +208,9 @@ export class AuthService {
         phone: currentUser.phone,
         password: newPassword,
       });
+      const result = await axios(
+        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=${currentUser.phone}&message=Your new password ${newPassword}`,
+      );
     } else {
       await this.resetPasswordModel.findOneAndUpdate(
         { phone: currentUser.phone },
@@ -230,6 +218,9 @@ export class AuthService {
           phone: currentUser.phone,
           password: newPassword,
         },
+      );
+      const result = await axios(
+        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=${currentUser.phone}&message=Your new password ${newPassword}`,
       );
     }
 
@@ -410,6 +401,10 @@ export class AuthService {
       await this.userModel.findByIdAndUpdate(data.idUser, {
         orderHistory: [...getUser.orderHistory, data.id],
       });
+
+      await axios(
+        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=380672558599&message=Нове замовлення: ${data.id}`,
+      );
 
       return {
         code: 201,
