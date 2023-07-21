@@ -167,21 +167,27 @@ export class AuthService {
       phone: data.phone,
     });
 
-    const result = await axios(
-      `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=${data.phone}&message=Your code ${currentCode.code}`,
-    );
+    try {
+      const result = await axios(
+        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=Pallet Dvor&to=${data.phone}&message=Your code ${currentCode.code}`,
+      );
+      if (!currentCode) {
+        return {
+          code: 404,
+          status: 'not found',
+        };
+      }
 
-    if (!currentCode) {
+      return {
+        code: 200,
+        status: 'ok',
+      };
+    } catch (err) {
       return {
         code: 404,
         status: 'not found',
       };
     }
-
-    return {
-      code: 200,
-      status: 'ok',
-    };
   }
 
   async resetPassword(data: { phone: string }): Promise<Object> {
@@ -210,9 +216,13 @@ export class AuthService {
         phone: currentUser.phone,
         password: newPassword,
       });
-      const result = await axios(
-        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=${currentUser.phone}&message=Your new password ${newPassword}`,
-      );
+      try {
+        const result = await axios(
+          `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=Pallet Dvor&to=${currentUser.phone}&message=Your new password ${newPassword}`,
+        );
+      } catch (err) {
+        console.log(err);
+      }
     } else {
       await this.resetPasswordModel.findOneAndUpdate(
         { phone: currentUser.phone },
@@ -221,9 +231,13 @@ export class AuthService {
           password: newPassword,
         },
       );
-      const result = await axios(
-        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=${currentUser.phone}&message=Your new password ${newPassword}`,
-      );
+      try {
+        const result = await axios(
+          `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=Pallet Dvor&to=${currentUser.phone}&message=Your new password ${newPassword}`,
+        );
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     return {
@@ -405,7 +419,7 @@ export class AuthService {
       });
 
       await axios(
-        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=test&to=380672558599&message=Нове замовлення: ${data.id}`,
+        `https://alphasms.ua/api/http.php?version=http&key=${process.env.SMS_KEY}&command=send&from=Pallet Dvor&to=380672558599&message=Нове замовлення: ${data.id}`,
       );
 
       return {
